@@ -1,7 +1,6 @@
 // Program.cs
 
 using System.Net;
-
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -15,10 +14,29 @@ var cacheOptions = new MemoryCacheEntryOptions()
 
 const string CrlContentType = "application/pkix-crl";
 
-app.MapGet("/inet", async (IHttpClientFactory factory, IMemoryCache cache) =>
+app.MapGet("/{id}", async (string id, IHttpClientFactory factory, IMemoryCache cache) =>
 {
-    const string cacheKey = "inet_crl_cache";
-    const string crlUrl = "https://ca.inet.co.th/repository/crl/inetca/complete.crl";
+    string cacheKey;
+    string crlUrl;
+    switch (id)
+    {
+        case "inet":
+            cacheKey = "inet_crl_cache";
+            crlUrl = "https://ca.inet.co.th/repository/crl/inetca/complete.crl";
+            break;
+        case "nrca":
+            cacheKey = "nrca_crl_cache";
+            crlUrl = "http://www.nrca.go.th/crl/THNRCA_arlfile.crl";
+            break;
+        
+        case "tdid":
+            cacheKey = "tdid_crl_cache";
+            crlUrl =
+                "http://www.thaidigitalid.com/tdidcag3crl/certdist?cmd=crl&issuer=CN%3dThai+Digital+ID+CA+G3%2cO%3dThai+Digital+ID+Company+Limited%2cC%3dTH";
+            break;
+        default:
+            return Results.NotFound();
+    }
 
     if (!cache.TryGetValue(cacheKey, out byte[]? cachedCrlBytes))
     {
@@ -53,45 +71,5 @@ app.MapGet("/inet", async (IHttpClientFactory factory, IMemoryCache cache) =>
 
     return Results.StatusCode((int)HttpStatusCode.InternalServerError);
 });
-
-app.MapGet("/nrca", async (IHttpClientFactory factory, IMemoryCache cache) => 
-{
-    const string cacheKey = "nrca_crl_cache";
-    const string crlUrl = "http://www.nrca.go.th/crl/THNRCA_arlfile.crl"; 
-
-    if (!cache.TryGetValue(cacheKey, out byte[]? cachedCrlBytes))
-    {
-        var client = factory.CreateClient();
-        try
-        {
-            var response = await client.GetAsync(crlUrl);
-
-            if (response.IsSuccessStatusCode)
-            {
-                cachedCrlBytes = await response.Content.ReadAsByteArrayAsync();
-                cache.Set(cacheKey, cachedCrlBytes, cacheOptions);
-                return Results.Stream(new MemoryStream(cachedCrlBytes), contentType: CrlContentType);
-            }
-
-            return Results.StatusCode((int)response.StatusCode);
-        }
-        catch (HttpRequestException)
-        {
-            return Results.StatusCode((int)HttpStatusCode.ServiceUnavailable);
-        }
-        catch (TaskCanceledException)
-        {
-            return Results.StatusCode((int)HttpStatusCode.GatewayTimeout); // Or ServiceUnavailable
-        }
-    }
-
-    if (cachedCrlBytes != null)
-    {
-        return Results.Stream(new MemoryStream(cachedCrlBytes), contentType: CrlContentType);
-    }
-
-    return Results.StatusCode((int)HttpStatusCode.InternalServerError);
-});
-
 
 app.Run();
