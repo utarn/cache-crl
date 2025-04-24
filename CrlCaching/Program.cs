@@ -36,11 +36,11 @@ app.MapGet("/inet", async (IHttpClientFactory factory, IMemoryCache cache) =>
 
             return Results.StatusCode((int)response.StatusCode);
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             return Results.StatusCode((int)HttpStatusCode.ServiceUnavailable); 
         }
-        catch (TaskCanceledException ex)
+        catch (TaskCanceledException)
         {
             return Results.StatusCode((int)HttpStatusCode.GatewayTimeout); 
         }
@@ -75,11 +75,11 @@ app.MapGet("/nrca", async (IHttpClientFactory factory, IMemoryCache cache) =>
 
             return Results.StatusCode((int)response.StatusCode);
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             return Results.StatusCode((int)HttpStatusCode.ServiceUnavailable);
         }
-        catch (TaskCanceledException ex)
+        catch (TaskCanceledException)
         {
             return Results.StatusCode((int)HttpStatusCode.GatewayTimeout); // Or ServiceUnavailable
         }

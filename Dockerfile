@@ -1,5 +1,7 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build-env
 WORKDIR /app
+
+RUN apk update && apk add --no-cache build-base
 
 # Copy csproj and restore dependencies
 COPY CrlCaching/*.csproj ./
