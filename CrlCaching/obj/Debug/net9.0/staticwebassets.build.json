@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "0710KEQ9LwqNn9C52eosC5/xH6ohCoFC5jC/QtfGLRY=",
+  "Source": "CrlCaching",
+  "BasePath": "_content/CrlCaching",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
